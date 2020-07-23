@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.theainfo">
+    <!-- TheaInfo 클래스 -->
+    <resultMap id="theaInfoResult" type="theainfo">
+        <result property="thea_code" column="thea_code" />
+        <result property="thea_name" column="thea_name" />
+        <result property="thea_loc" column="thea_loc" />
+        <result property="thea_time" column="thea_time" />
+        <result property="thea_tel" column="thea_tel" />
+        <result property="thea_img" column="thea_img" />
+    </resultMap>
+    
+	<!-- thea_name 으로 thea_code 찾기 -->
+	<select id="theacodeFind" resultType="String" parameterType="String">
+		SELECT thea_code FROM thea_info where thea_name=#{thea_name};
+	</select>
+	
+    <!--영화관 전체검색-->
+    <select id="selectAllThea" resultMap="theaInfoResult" parameterType="map">
+        SELECT * FROM thea_info
+        WHERE ${field} LIKE CONCAT('%',#{query},'%')
+        ORDER BY THEA_CODE ASC
+        LIMIT #{offset},#{count}
+    </select>
+    
+    <select id="selectThea" resultMap="theaInfoResult">
+        SELECT * FROM thea_info
+    </select>
+
+    <!-- 영화관 개수 조회 -->
+    <select id="selectAllTheaCount" resultType="_int" parameterType="map">
+        SELECT count(*) FROM thea_info
+        WHERE ${field} LIKE CONCAT('%',#{query},'%')
+        ORDER BY THEA_CODE ASC
+    </select>
+
+
+    <select id="selectLastTheaCode" resultType="string" parameterType="string">
+        SELECT MAX(THEA_CODE) FROM THEA_INFO
+        WHERE THEA_CODE LIKE CONCAT(#{regionName},'%')
+    </select>
+
+    <!-- 영화관 추가 -->
+    <insert id="insertTheaInfo" parameterType="theainfo">
+        INSERT INTO
+        thea_info(
+                thea_code ,thea_name ,thea_loc ,thea_time ,thea_tel ,thea_img
+        )
+         VALUES(
+                #{thea_code}, #{thea_name}, #{thea_loc}, #{thea_time}, #{thea_tel} ,#{thea_img}
+        )
+    </insert>
+
+    <!-- 코드에 해당하는 영화관 정보 -->
+    <select id="selectTheaInfoByTheaCode" parameterType="String" resultType="theainfo">
+        SELECT *
+         FROM thea_info WHERE thea_code = #{thea_code}
+    </select>
+
+    <!-- 코드에 해당하는 영화관 수정 -->
+    <update id="updateTheaInfo" parameterType="theainfo">
+        UPDATE THEA_INFO SET THEA_NAME = #{thea_name}, THEA_LOC = #{thea_loc}, THEA_TIME = #{thea_time}, THEA_TEL = #{thea_tel}
+        <if test="thea_img != null">
+            , THEA_IMG = #{thea_img}
+        </if>
+        WHERE THEA_CODE = #{thea_code}
+    </update>
+
+    <!-- 코드에 해당하는 이미지 파일이름 -->
+    <select id="selectTheaInfoImgByTheaCode" parameterType="String" resultType="String">
+        SELECT THEA_IMG FROM THEA_INFO WHERE THEA_CODE = #{thea_code}
+    </select>
+
+    <!-- 코드에 해당하는 레코드 삭제 -->
+    <delete id="deleteTheaInfo" parameterType="String">
+        DELETE FROM THEA_INFO WHERE THEA_CODE = #{thea_code}
+    </delete>
+</mapper>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.movie">
+
+    <!-- Movie 클래스 -->
+    <resultMap id="movieResult" type="movie">
+        <result property="mov_code" column="mov_code" />
+        <result property="mov_title" column="mov_title" />
+        <result property="mov_content" column="mov_content" />
+        <result property="mov_director" column="mov_director" />
+        <result property="mov_genre" column="mov_genre" />
+        <result property="mov_rate" column="mov_rate" />
+        <result property="mov_time" column="mov_time" />
+        <result property="mov_opening" column="mov_opening" />
+        <result property="mov_regdate" column="mov_regdate" />
+        <result property="mov_img" column="mov_img" />
+        <result property="mov_mainactor" column="mov_mainactor" />
+        <result property="mov_supportactor" column="mov_supportactor" />
+        <result property="mov_end" column="mov_end" />
+        <result property="mov_per" column="mov_per" />
+    </resultMap>
+
+   <!-- 
+      resultMap : list일때 사용
+      resultType : 가져오는게 여러개가 아닐때
+   -->
+   
+   
+    <select id="selectOneMovieInfo" resultMap="movieResult" parameterType="String">
+        SELECT * FROM movieforest.movie 
+        WHERE mov_code = #{mov_code}
+    </select>
+    
+    
+    <select id="selectAllMovie" resultMap="movieResult">
+       SELECT mov_code, mov_title, mov_director, mov_genre, mov_rate, mov_time
+            , mov_opening, mov_regdate, mov_end
+       FROM movieforest.movie
+       ORDER BY mov_opening ASC, mov_title ASC
+    </select>
+    
+    <select id="selectAllMovieCard" resultMap="movieResult">
+       SELECT mov_code, mov_title, mov_opening, mov_img
+       FROM movieforest.movie
+    </select>
+    
+    <select id="selectComeMovieCard" resultMap="movieResult">
+        <![CDATA[
+           SELECT mov_code, mov_title, mov_opening, mov_img, mov_rate
+         FROM movieforest.movie
+         WHERE DATE(mov_opening) > DATE(now()) AND (mov_end <> 'END')
+         ORDER BY mov_opening ASC, mov_title ASC
+        ]]>
+    </select>
+
+   	<!-- 영화 상영작/예정작 -->
+	<select id="selectNowMovieCard" resultMap="movieResult">
+        <![CDATA[
+	        SELECT A.mov_code, mov_title, mov_img, mov_rate, ifnull(sum(res_count),0) AS mov_per
+			FROM movieforest.movie A JOIN movieforest.mov_show B LEFT JOIN movieforest.res C
+			ON A.mov_code = B.mov_code AND B.show_code = C.show_code 
+			WHERE mov_end = 'CON' AND DATE(mov_opening) <= DATE(now())
+			GROUP BY mov_title
+			ORDER BY mov_per DESC, mov_title
+        ]]>
+    </select>
+    
+    
+    <select id="countMovCode" resultType="String" parameterType="String">
+      SELECT mov_code
+      FROM movieforest.movie
+      WHERE mov_code LIKE '%${value}%'
+      ORDER BY mov_code DESC
+      limit 1
+    </select>
+   
+   
+    <insert id="insertMovie" parameterType="movie">
+        INSERT INTO movieforest.movie (mov_code, mov_title, mov_content, mov_director, mov_genre, mov_rate, mov_time, mov_opening, 
+                                       mov_regdate, mov_img, mov_mainactor, mov_supportactor) 
+      VALUES (#{mov_code}, #{mov_title}, #{mov_content}, #{mov_director}, #{mov_genre}, #{mov_rate}, #{mov_time}, #{mov_opening},
+              now(), #{mov_img}, #{mov_mainactor}, #{mov_supportactor})
+    </insert>
+    
+    <delete id="deleteMovie" parameterType="String" >
+       DELETE FROM movieforest.movie
+       WHERE mov_code = #{mov_code}
+    </delete>
+    
+    
+    <update id="updateMovie" parameterType="movie">
+       UPDATE movieforest.movie
+       SET mov_title=#{mov_title}, mov_content=#{mov_content}, mov_director=#{mov_director}, mov_genre=#{mov_genre}, mov_rate=#{mov_rate}, mov_time=#{mov_time}, 
+           mov_opening=#{mov_opening}, mov_img=#{mov_img}, mov_mainactor=#{mov_mainactor}, mov_supportactor=#{mov_supportactor}, mov_end=#{mov_end}
+       WHERE mov_code = #{mov_code}
+    </update>
+    
+    
+    <select id="countOneMovResv" resultType="int" parameterType="String">
+       SELECT IFNULL(sum(res_count), 0)
+      FROM movieforest.movie A, movieforest.mov_show B, movieforest.res C
+      WHERE A.mov_code = B.mov_code AND B.show_code = C.show_code
+      AND A.mov_end = 'CON'AND B.mov_code = #{mov_code}
+    </select>
+    
+    <select id="countAllMovResv" resultType="int">
+       SELECT IFNULL(sum(res_count), 0)
+      FROM movieforest.movie A, movieforest.mov_show B, movieforest.res C
+      WHERE A.mov_code = B.mov_code AND B.show_code = C.show_code
+      AND A.mov_end = 'CON'
+    </select>
+    
+    
+</mapper>

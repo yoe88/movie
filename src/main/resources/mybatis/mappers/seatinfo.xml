@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.seatinfo">
+	<!-- seatinfo 클래스 -->
+	<!-- resultMap = list와 비슷 -->
+	<resultMap id="seatinfoResult" type="seatinfo">
+		<result property="seat_code" column="seat_code" />
+		<result property="room_code" column="room_code" />
+		<result property="seat_column" column="seat_column" />
+		<result property="seat_row" column="seat_row" />
+	</resultMap>
+	
+	<resultMap id="theainfoResult" type="theainfo">
+		<result property="thea_code" column="thea_code" />
+		<result property="thea_name" column="thea_name" />
+		<result property="thea_loc" column="thea_loc" />
+		<result property="thea_time" column="thea_time" />
+		<result property="thea_tel" column="thea_tel" />
+		<result property="thea_img" column="thea_img" />
+	</resultMap>
+	
+
+
+	<!-- 좌석정보 테이블 -->
+	
+	
+	<!-- 좌석정보 불러오기 -->
+	<select id="selectseats" resultMap="seatinfoResult"
+		parameterType="String">
+		select * from seat_info where room_code = #{room_code}
+	</select>
+	
+	
+	<!-- 좌석정보 불러오기 -->
+	<select id="selectseatinfo" resultType="seatinfo"
+		parameterType="seatinfo">
+		select * from seat_info where seat_code=#{seat_code}
+	</select>
+
+	<!-- 좌석정보 수정하기 -->
+	<update id="updateseatinfo" parameterType="seatinfo">
+		update seat_info set seat_column=#{seat_column}, seat_row=#{seat_row} where
+		seat_code=#{seat_code}
+	</update>
+
+	<!-- 좌석정보 삭제하기 -->
+	<delete id="deleteseatinfo" parameterType="string">
+		delete from seat_info where room_code LIKE CONCAT('%',#{room_code},'%')
+	</delete>
+
+
+
+	<!-- 페이징처리 리스트 -->
+	<select id="selectpaging" resultMap="seatinfoResult"
+		parameterType="map">
+		SELECT *
+		FROM SEAT_INFO
+		WHERE ROOM_CODE LIKE CONCAT('%',#{query},'%')
+		ORDER BY
+		seat_code asc
+		LIMIT #{start},#{count}
+	</select>
+
+	<!-- 총 개수 -->
+	<select id="totalpage" resultType="int" parameterType="string">
+		select count(seat_code) from seat_info
+		WHERE ROOM_CODE LIKE CONCAT('%',#{query},'%')
+	</select>
+
+	<!-- 좌석정보 추가 -->
+	<insert id="insertseatinfo" parameterType="seatinfo">
+		insert into seat_info(seat_code,room_code,seat_column,seat_row)
+		values ( #{seat_code}, #{room_code} , #{seat_column} , #{seat_row} )
+	</insert>
+	
+
+
+
+
+
+
+</mapper>

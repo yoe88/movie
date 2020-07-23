@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.res">
+
+	<!-- resultMap = list와 비슷 -->
+	<resultMap id="resResult" type="res">
+		<result property="res_code" column="res_code" />
+		<result property="show_code" column="show_code" />
+		<result property="mem_id" column="mem_id" />
+		<result property="res_count" column="res_count" />
+		<result property="res_date" column="res_date" />
+		<result property="res_sum" column="res_sum" />
+		<result property="res_point" column="res_point" />
+	</resultMap>
+
+	
+	<select id="selectres" parameterType="string" resultType="int">
+		select count(show_code) from res where res_code=#{res_code}
+	</select>
+	
+	<select id="findshowcode" parameterType="map" resultType="res" >
+	select * from mov_show where room_code LIKE CONCAT('%',#{room_code},'%') 
+	AND show_date LIKE  CONCAT('%',#{show_date},'%')
+	AND show_time LIKE  CONCAT('%',#{show_time},'%')
+	</select>
+	
+	<insert id="insertres" parameterType="res" >
+		INSERT INTO res (res_code, show_code, mem_id, res_count,res_sum, res_point,res_date) 	
+		VALUES (#{res_code},#{show_code},#{mem_id},#{res_count},#{res_sum},0,now())
+	</insert>
+	
+	<insert id="insertseat" parameterType="map">
+		INSERT INTO seat (res_code,seat_code, show_code)
+		VALUES (#{res_code},#{seat_code}, #{show_code})
+	</insert>
+
+	<resultMap id="myResResult" type="map">
+		<id property="resCode" column="resCode" />
+		<result property="title" column="title"/>
+		<result property="movCode" column="movCode"/>
+		<result property="showTime" column="showTime"/>
+		<result property="location" column="location"/>
+		<result property="people" column="people"/>
+		<result property="price" column="price"/>
+		<result property="point" column="point"/>
+		<result property="resDate" column="resDate"/>
+		<collection property="seat" ofType="string" javaType="arraylist">
+			<result property="seat" column="seat"/>
+		</collection>
+	</resultMap>
+
+
+	<!-- 상영 코드로 영화이름, 영화관 이름 가져오기 -->
+	<select id="selectNames" parameterType="map" resultType="map">
+		SELECT MOV_TITLE movTitle ,(SELECT THEA_NAME FROM THEA_INFO WHERE THEA_CODE = #{theaCode}) theaName
+		FROM MOV_SHOW MS
+		JOIN MOVIE M ON MS.MOV_CODE = M.MOV_CODE
+		WHERE SHOW_CODE = #{showCode}
+	</select>
+
+	<!-- 아이디에 해당하는 예매내역 리스트 -->
+	<select id="myRes" resultMap="myResResult" parameterType="string">
+        SELECT R.RES_CODE resCode                                                          #예매코드
+                ,MOV_TITLE title                                                           #영화제목
+                ,M.MOV_CODE movCode															#영화코드
+                ,CONCAT(DATE(SHOW_DATE),' ',SHOW_TIME) showTime                             #관람시간
+                ,CONCAT(THEA_NAME,' | ' ,CAST(SUBSTRING(R.RES_CODE,5,2) AS UNSIGNED), '관') location  #관람극장
+                ,RES_COUNT people                                                           #인원
+                ,SUBSTRING(SEAT_CODE,7,3) seat                                              #좌석
+                ,RES_SUM  price                                                             #결제금액
+                ,RES_DATE resDate                                                           #결제시간
+                ,R.RES_POINT point															#사용한 포인트
+        FROM RES R
+        JOIN MOV_SHOW  MS ON R.SHOW_CODE = MS.SHOW_CODE
+        JOIN MOVIE      M ON MS.MOV_CODE = M.MOV_CODE
+        JOIN THEA_INFO TI ON SUBSTR(R.RES_CODE,1,4) = TI.THEA_CODE
+        JOIN SEAT  S      ON R.RES_CODE = S.RES_CODE
+        <![CDATA[
+        WHERE MEM_ID = #{id} AND DATE(SHOW_DATE) >= DATE(NOW())
+        ]]>
+        ORDER BY RES_DATE DESC
+    </select>
+
+	<!-- 예매취소 작업 -->
+	<delete id="deleteResByResCode" parameterType="string">
+		DELETE FROM RES WHERE RES_CODE = #{resCode}
+	</delete>
+
+	<!-- 마지막 예매 코드 가져오기 -->
+	<select id="selectLastResCode" parameterType="string" resultType="string">
+		SELECT RES_CODE
+		FROM RES
+		WHERE RES_CODE LIKE CONCAT(#{rescode},'%')
+		ORDER BY RES_DATE DESC
+		LIMIT 0,1
+	</select>
+
+	<insert id="insertRes" parameterType="res">
+		INSERT INTO RES
+			(RES_CODE, SHOW_CODE, MEM_ID, RES_COUNT,RES_SUM, RES_POINT)
+		VALUES
+			(#{res_code},#{show_code},#{mem_id},#{res_count},#{res_sum},#{res_point})
+	</insert>
+	
+	
+	<!-- 예매결과에 영화포스터보여주기 -->
+	<select id="selectposter" resultType="string" parameterType="string">
+	select mov_img from movieforest.movie where mov_title = #{mov_title}
+	</select>
+	
+	
+	
+	
+	
+</mapper>

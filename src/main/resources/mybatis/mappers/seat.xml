@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.seat">
+
+    <select id="selectSeat" parameterType="string" resultType="string">
+    	SELECT SEAT_CODE
+		FROM SEAT
+		WHERE SHOW_CODE LIKE CONCAT(#{show_code},'%')
+    </select>
+
+	<insert id="insertSeat" parameterType="seat">
+			INSERT INTO SEAT
+			VALUES (#{res_code}, #{seat_code}, #{show_code})
+	</insert>
+</mapper>
+
+<!--  mysql에서 불러 오겠다  -->

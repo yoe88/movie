@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.still">
+
+    <!-- Still 클래스 -->
+    <resultMap id="stillResult" type="still">
+        <result property="still_no" column="still_no" />
+        <result property="mov_code" column="mov_code" />
+		<result property="still_img" column="still_img" />
+    </resultMap>
+	
+	
+	
+	<!-- 
+		resultMap : list일때 사용
+		resultType : 가져오는게 여러개가 아닐때
+	-->
+	
+	<select id="selectStillNo" resultType="int" parameterType="String">
+        SELECT * FROM stillcut 
+        WHERE mov_code = #{mov_code}
+        ORDER BY still_no ASC
+        LIMIT 1
+    </select>
+	
+	
+    <select id="selectMovieStills" resultMap="stillResult" parameterType="String">
+        SELECT * FROM stillcut 
+        WHERE mov_code = #{mov_code}
+    </select>
+    
+    <select id="selectOneStill" resultMap="stillResult" parameterType="int">
+    	SELECT * FROM stillcut
+    	WHERE still_no = #{still_no}
+    </select>	
+    
+    
+    <select id="deleteSelectStillNo" resultType="int" parameterType="String">
+    	SELECT still_no FROM stillcut
+    	WHERE still_img = #{still_img}
+    </select>	
+	
+    <insert id="insertStill" parameterType="still">
+        <selectKey keyProperty="still_no" resultType="java.lang.Integer" order="BEFORE">
+        	<!-- select count(IFNULL(still_no, 0)) from movieforest.stillcut -->
+    		select ifnull(max(still_no), 0)+1 from movieforest.stillcut
+    	</selectKey>
+        INSERT INTO movieforest.stillcut (still_no, mov_code, still_img) 
+		VALUES ( #{still_no}, #{mov_code}, #{still_img})
+        <!-- INSERT INTO movieforest.stillcut (still_no, mov_code, still_img) 
+		VALUES ( (SELECT IFNULL(max(still_no), 0)+1 FROM movieforest.stillcut)
+		         , #{mov_code}, #{still_img}) -->
+    </insert>
+    
+    <!-- 스틸컷 delete(영화랑 같이) -->
+    <delete id="deleteStill" parameterType="String">
+    	DELETE FROM stillcut
+    	WHERE mov_code = #{mov_code}
+    </delete>
+    
+    <!-- 스틸컷 한개 delete(관리자용) -->
+    <delete id="deleteOneStill" parameterType="int">
+    	DELETE FROM stillcut
+    	WHERE still_no = #{still_no}
+    </delete>
+    
+    
+    
+    
+</mapper>

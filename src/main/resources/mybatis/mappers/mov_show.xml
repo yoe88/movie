@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.mov_show">
+	<!-- mov_show 클래스 -->
+	<resultMap id="mov_showResult" type="mov_show">
+		<result property="show_code" column="show_code" />
+		<result property="mov_code" column="mov_code" />
+		<result property="room_code" column="room_code" />
+		<result property="show_date" column="show_date" />
+		<result property="show_time" column="show_time" />
+	</resultMap>
+	
+	<resultMap type="map" id="movTheaDate">
+		<result property="show_code" column="show_code" />
+		<result property="mov_title" column="mov_title"/>
+		<result property="room_name" column="room_name"/>
+		<result property="thea_name" column="thea_name"/>
+		<result property="show_date" column="show_date" />
+		<result property="show_time" column="show_time" />
+		<result property="mov_rate" column="mov_rate" />
+		<result property="room_type" column="room_type" />
+	</resultMap>
+
+	<!-- resultMap이 List, resultType이 단일 변수를 보낼 때 쓴다 -->
+
+	<!--영화관선택 = 그  영화관에서 볼 수 있는 영화 보여주기(4일간) -->
+	<select id="selectMovByThea" resultMap="movTheaDate" parameterType="String">
+		<![CDATA[
+			select `show_code`,`mov_title`, `mov_rate`, `room_type`, `room_name` , `show_date` , `show_time` from `movieforest`.`mov_show` `A`, `movieforest`.`movie` `B`,  `movieforest`.`room_info` `C`
+			where `A`.`mov_code` = `B`.`mov_code` AND `A`.`room_code` = `C`.`room_code` And `thea_code` = '${parameter1}' AND `show_date`=${parameter2}
+			AND `show_date`>=date_format(now(),'%Y%m%d') AND `show_date`<=date_format(DATE_ADD(NOW(), INTERVAL 4 DAY),'%Y%m%d') order by `show_time`
+		]]>
+	</select>
+	
+	
+	<!-- 4일간의 모든 상영표 가져오기 -->
+	<select id="selectmovAll" resultMap="movTheaDate">
+	<![CDATA[
+			select `mov_title`, `thea_name`, `room_name`, `show_date`, `show_time`,`show_code` from `movieforest`.`mov_show` `A`, `movieforest`.`movie` `B`,  `movieforest`.`room_info` `C` , `movieforest`.`thea_info` `D`
+			where `A`.`mov_code` = `B`.`mov_code` AND `A`.`room_code` = `C`.`room_code` AND `C`.`thea_code` = `D`.`thea_code`
+			AND `show_date`>=date_format(now(),'%Y%m%d') AND `show_date`<=date_format(DATE_ADD(NOW(), INTERVAL 4 DAY),'%Y%m%d') order by `show_time`
+	]]>
+	</select>
+	
+	<select id="selectMov_title" parameterType="String" resultMap="movTheaDate">
+	<![CDATA[
+		select distinct `mov_title`, `mov_rate`from `movieforest`.`mov_show` `A`, `movieforest`.`movie` `B`,  `movieforest`.`room_info` `C`
+		where `A`.`mov_code` = `B`.`mov_code` AND `A`.`room_code` = `C`.`room_code` And `thea_code` = '${parameter1}' AND `show_date`=${parameter2}
+		AND `show_date`>=date_format(now(),'%Y%m%d') AND `show_date`<=date_format(DATE_ADD(NOW(), INTERVAL 4 DAY),'%Y%m%d') order by `mov_opening` desc, `mov_title`
+	]]>
+	</select>
+	
+	
+	<!-- 관리자용 상영표 보기 -->
+	<select id="selectmovAllMaster"  parameterType="String" resultMap="movTheaDate">
+	<![CDATA[
+		select `mov_title`, `room_type`, `room_name` , `show_date` , `show_time`, `show_code`, `mov_rate` from `movieforest`.`mov_show` `A`, `movieforest`.`movie` `B`,  `movieforest`.`room_info` `C`
+		where `A`.`mov_code` = `B`.`mov_code` AND `A`.`room_code` = `C`.`room_code` And `thea_code` = '${parameter1}' AND `show_date`=${parameter2}
+		order by `show_date`, `show_time`;
+	]]>
+	</select>
+	
+	<!-- 하나의 상영정보 가져오기(수정용) -->
+	<select id="readMov_show" parameterType="String" resultType="mov_show">
+		select `show_code`, `mov_code` , `room_code`, `show_date`, `show_time` from `movieforest`.`mov_show` where `show_code`=#{show_code}
+	</select>
+	
+	<insert id="insertMov_show" parameterType="mov_show">
+        INSERT INTO `movieforest`.`mov_show` (`show_code`, `mov_code` , `room_code`, `show_date`, `show_time`)
+		values(#{show_code}, #{mov_code}, #{room_code}, #{show_date}, #{show_time})
+    </insert>
+    
+    <update id="updateMov_show" parameterType="mov_show">
+    	UPDATE mov_show SET `mov_code`=#{mov_code}, `room_code`=#{room_code}, `show_date`=#{show_date}, `show_time`=#{show_time} where `show_code`='${show_code}'
+    </update>
+    
+    <delete id="deleteMov_show" parameterType="mov_show">
+    	DELETE FROM `movieforest`.`mov_show` WHERE `show_code` = #{show_code}
+    </delete>
+</mapper>

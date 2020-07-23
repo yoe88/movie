@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.com_notice">
+    <!-- Com_notice 클래스 -->
+    <resultMap id="comNoticeResult" type="comNotice">
+        <result property="com_no" column="com_no" />
+        <result property="com_gcode" column="com_gcode" />
+        <result property="mem_id" column="mem_id" />
+        <result property="com_type" column="com_type" />
+        <result property="com_title" column="com_title" />
+        <result property="com_cont" column="com_cont" />
+        <result property="com_filename" column="com_filename" />
+        <result property="com_visitnum" column="com_visitnum" />
+        <result property="com_grpno" column="com_grpno" />
+        <result property="com_repno" column="com_repno" />
+        <result property="com_indent" column="com_indent" />
+        <result property="com_readgt" column="com_readgt" />
+        <result property="com_ip" column="com_ip" />
+    </resultMap>
+
+<!-- 
+resultMap : list일때 사용
+resultType : 가져오는게 여러개가 아닐때
+-->
+
+    <!--1.5게시물 리스트-->
+    <!-- resultMap="comNoticeResult"  -->
+    <select id="aaaPage" resultType="comNotice" parameterType="searchCriteria">
+        SELECT com_no, com_title, mem_id, com_visitnum, com_readgt, com_repno
+		FROM(SELECT n.com_no, com_title, n.mem_id, com_visitnum, com_readgt, count(rno) com_repno, row_number()	OVER(ORDER BY com_no DESC)AS rnum
+				FROM com_notice n
+	            left join com_reply r
+				on n.com_no = r.com_no
+				WHERE 1=1
+	            <include refid="search"></include>
+	            group by n.com_no, com_title, n.mem_id, com_visitnum, com_readgt
+	            ORDER BY n.com_no DESC
+		)movieforest
+		WHERE rnum BETWEEN #{rowStart} AND #{rowEnd}
+    </select>
+    
+    <!-- 검색이랑 페이징에 쓰는 친구 -->
+	<select id="listCount" parameterType="searchCriteria" resultType="int">
+		SELECT COUNT(com_no)
+		  FROM movieforest.com_notice
+		 WHERE 1=1
+		<include refid="search"></include>
+		 AND com_no > 0
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	<!-- movtalk -->
+	<!-- resultMap="comNoticeResult"  -->
+    <select id="selectMovtalk" resultType="comNotice" parameterType="searchCriteria">
+        SELECT com_no, com_title, mem_id, com_visitnum, com_readgt, com_repno, com_type
+		FROM(SELECT n.com_no, com_title, n.mem_id, com_type, com_visitnum, com_readgt, count(rno) com_repno, row_number()	OVER(ORDER BY com_no DESC)AS rnum
+			FROM com_notice n
+			left join com_reply r
+			on n.com_no = r.com_no
+			WHERE com_gcode = 'mov'
+			<include refid="search"></include>
+			group by n.com_no, com_title, n.mem_id, com_visitnum, com_readgt
+			ORDER BY n.com_no DESC
+		)movieforest
+		WHERE rnum BETWEEN #{rowStart} AND #{rowEnd}
+    </select>
+    
+    <!-- 검색이랑 페이징에 쓰는 친구 -->
+	<select id="movtalkCount" parameterType="searchCriteria" resultType="int">
+		SELECT COUNT(com_no)
+		FROM movieforest.com_notice
+		WHERE com_gcode = 'mov'
+		<include refid="search"></include>
+		AND com_no > 0
+	</select>
+	
+	
+	
+	
+	<!-- que -->
+	<!-- resultMap="comNoticeResult"  -->
+    <select id="selectQue" resultType="comNotice" parameterType="searchCriteria">
+        SELECT com_no, com_title, mem_id, com_visitnum, com_readgt, com_repno, com_type
+		FROM(SELECT n.com_no, com_title, com_type, n.mem_id, com_visitnum, com_readgt, count(rno) com_repno, row_number()	OVER(ORDER BY com_no DESC)AS rnum
+			FROM movieforest.com_notice n
+			left join movieforest.com_reply r
+			on n.com_no = r.com_no
+			WHERE com_gcode = 'que'
+			<include refid="search"></include>
+			group by n.com_no, com_title, n.mem_id, com_visitnum, com_readgt
+			ORDER BY n.com_no DESC
+		)movieforest
+		WHERE rnum BETWEEN #{rowStart} AND #{rowEnd}
+    </select>
+    
+    
+    <!-- myque -->
+    <!-- resultMap="comNoticeResult"  -->
+    <select id="selectmyQue" resultType="comNotice" parameterType="searchCriteria">
+        SELECT com_no, com_title, mem_id, com_visitnum, com_readgt, com_repno, com_type
+		FROM(SELECT n.com_no, com_title, com_type, n.mem_id, com_visitnum, com_readgt, count(rno) com_repno, row_number()	OVER(ORDER BY com_no DESC)AS rnum
+			FROM movieforest.com_notice n
+			left join movieforest.com_reply r
+			on n.com_no = r.com_no
+			WHERE com_gcode = 'que'
+			<include refid="search"></include>
+			group by n.com_no, com_title, n.mem_id, com_visitnum, com_readgt
+			ORDER BY n.com_no DESC
+		)movieforest
+		WHERE rnum BETWEEN #{rowStart} AND #{rowEnd} AND mem_id = #{mem_id}
+    </select>
+    
+    <!-- 검색이랑 페이징에 쓰는 친구 -->
+	<select id="queCount" parameterType="searchCriteria" resultType="int">
+		SELECT COUNT(com_no)
+		FROM movieforest.com_notice
+		WHERE com_gcode = 'que'
+		<include refid="search"></include>
+		AND com_no > 0
+	</select>
+	
+	
+	
+	
+	
+	
+	<!-- 검색 기준 -->
+	<sql id="search" >
+		<if test="searchType != null">
+			<if test="searchType == 't'.toString()">AND com_title LIKE CONCAT('%', #{keyword},'%')</if>
+			<if test="searchType == 'c'.toString()">AND com_cont LIKE CONCAT('%', #{keyword},'%')</if>
+			<if test="searchType == 'w'.toString()">AND mem_id LIKE CONCAT('%', #{keyword},'%')</if>
+			<if test="searchType == 'tc'.toString()">AND (com_title LIKE CONCAT('%', #{keyword},'%')) or (com_cont LIKE CONCAT('%', #{keyword},'%'))</if>
+		</if>
+	</sql>
+    
+    <!--1.7게시물 조회수-->
+	<!-- 조회수 +1 -->
+	<update id="upVisitnum" parameterType="int">
+		UPDATE movieforest.com_notice SET com_visitnum = com_visitnum + 1 WHERE com_no = #{com_no}
+	</update>
+ 
+    <!--3게시물 하나 불러오기-->
+    <select id="selectOneComNotice" resultType="comNotice" parameterType="int">
+        select * from movieforest.com_notice where com_no = #{com_no}
+    </select>    
+
+    <!--4게시물 등록폼-->
+    <insert id="insertComNotice" parameterType="comNotice">
+        insert into movieforest.com_notice(com_gcode, mem_id, com_type, com_title, com_cont, com_filename, com_visitnum, com_grpno, com_repno, com_indent, com_ip) 
+        values (#{com_gcode}, #{mem_id}, #{com_type}, #{com_title}, #{com_cont}, #{com_filename}, #{com_visitnum}, #{com_grpno}, #{com_repno}, #{com_indent}, #{com_ip})
+    </insert>
+    
+    <!--5게시물 삭제-->
+    <delete id="deleteComNotice" parameterType="int">
+    	delete from movieforest.com_notice
+    	where com_no = #{com_no}
+    </delete>
+    
+    <!--6게시물 수정-->
+    <update id="updateComNotice" parameterType="comNotice">
+    	update movieforest.com_notice
+    	set com_no =#{com_no}, com_type =#{com_type}, com_title =#{com_title}, com_cont =#{com_cont}, com_filename =#{com_filename}, com_readgt = now(), com_ip =#{com_ip}
+    	where com_no=#{com_no} 
+    </update>
+	
+	
+	
+	
+	<!-- 메인 화면에 인기글 가져오기 -->
+	<select id="selectPopular" resultMap="comNoticeResult">
+		SELECT * FROM movieforest.com_notice
+		 where com_gcode = 'mov'
+		ORDER BY com_visitnum DESC
+		LIMIT 4
+	</select>
+	
+	
+	<!-- 메인 화면에 최신글 가져오기 -->
+	<select id="selectNew" resultMap="comNoticeResult">
+		SELECT * FROM movieforest.com_notice
+        where com_gcode = 'mov'
+		ORDER BY com_readgt DESC
+		LIMIT 4
+	</select>
+	
+	
+	<!-- movtalk -->
+
+</mapper>
+
+<!--  mysql에서 불러 오겠다  -->

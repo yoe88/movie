@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.member">
+	<!-- Member 클래스 -->
+	<resultMap id="memberResult" type="member">
+		<result property="id" column="id" />
+		<result property="password" column="password" />
+	</resultMap>
+	
+	
+	<resultMap id="mypageResult" type="member">
+       <result property="mem_id" column="mem_id" />
+       <result property="mem_name" column="mem_name" />
+       <result property="mem_lev" column="mem_lev" />
+       <result property="mem_point" column="mem_point" />
+    </resultMap>
+
+	<!-- 로그인 -->
+	<select id="login" parameterType="member" resultType="String">
+		SELECT mem_lev FROM movieforest.member
+		WHERE mem_id= #{mem_id} and mem_passwd= #{mem_passwd}
+		AND mem_lev IN('V','G','S','B','MASTER')
+	</select>
+
+
+	<!-- 아이디중복확인 -->
+	<select id="checkID" parameterType="member" resultType="int">
+		SELECT count(mem_id) as cnt FROM member
+		WHERE mem_id=#{mem_id}
+	</select>
+
+
+	<!-- 이메일중복확인 -->
+	<select id="checkEmail" parameterType="member" resultType="int">
+		SELECT count(mem_email) as cnt FROM member
+		WHERE mem_email=#{mem_email}
+	</select>
+
+
+	<!-- 회원등록 -->
+	<insert id="insertmember" parameterType="member">
+		insert into member(mem_id, mem_passwd, mem_name, mem_phone, mem_date,
+		mem_email, mem_lev, mem_birth, mem_zipcode, mem_addr, mem_addr2)
+		values(#{mem_id}, #{mem_passwd}, #{mem_name}, #{mem_phone}, now(),
+		#{mem_email}, 'B', #{mem_birth}, #{mem_zipcode}, #{mem_addr},
+		#{mem_addr2})
+	</insert>
+
+
+	<!-- 회원수정정보 가져오기 -->
+	<select id="updatemember" parameterType="member"
+		resultType="member">
+		SELECT mem_id, mem_passwd, mem_name, mem_phone, mem_email, mem_birth,
+		mem_zipcode, mem_addr, mem_addr2
+		FROM member
+		WHERE mem_id=#{mem_id}
+	</select>
+
+
+	<!-- 회원수정정보 등록 -->
+	<update id="updatememberpro" parameterType="member">
+		UPDATE member set mem_passwd=#{mem_passwd}, mem_name=#{mem_name},
+		mem_phone=#{mem_phone},
+		mem_email=#{mem_email}, mem_birth=#{mem_birth}, mem_zipcode=#{mem_zipcode},
+		mem_addr=#{mem_addr}, mem_addr2=#{mem_addr2}
+		WHERE mem_id=#{mem_id}
+	</update>
+
+
+	<!-- 회원탈퇴 -->
+	<update id="deletemember" parameterType="member">
+		UPDATE member set mem_lev='OUT'
+		WHERE mem_id= #{mem_id} and mem_passwd = #{mem_passwd}
+	</update>
+
+
+	<!-- 아이디찾기 -->
+	<select id="findId" parameterType="member" resultType="member">
+		SELECT * from member
+		WHERE mem_name=#{mem_name} AND mem_phone=#{mem_phone}
+	</select>
+
+
+	<!-- 비밀번호찾기 -->
+	<select id="findPw" parameterType="member" resultType="member">
+		SELECT * from member
+		WHERE mem_id=#{mem_id} AND mem_email=#{mem_email}
+	</select>
+
+
+
+	<!-- 회원관리 -->
+	<!-- 회원상세보기 -->
+	<select id="memberdetail" parameterType="member" resultType="member">
+		select * FROM member
+		where mem_id=#{mem_id}
+	</select>
+
+	
+	<!-- 회원수정 등록 -->
+	<update id="updatemembermapro" parameterType="member">
+		UPDATE member set mem_id=#{mem_id}, mem_name=#{mem_name},
+		mem_phone=#{mem_phone}, mem_email=#{mem_email},
+		mem_lev=#{mem_lev}, mem_point=#{mem_point}
+		WHERE mem_id=#{mem_id}
+	</update>
+
+	<update id="updatePointById" parameterType="map">
+		UPDATE MEMBER SET MEM_POINT = MEM_POINT + #{point}
+		WHERE MEM_ID = #{id}
+	</update>
+	
+
+
+	
+	<!-- 회원목록 페이징 -->
+	<!-- 페이징처리 리스트 -->
+	<select id="memberselectpaging" resultMap="memberResult"
+		parameterType="map">
+		SELECT *
+		FROM member
+		WHERE mem_id LIKE CONCAT('%',#{query},'%')
+		ORDER BY mem_date DESC
+		LIMIT #{start},#{count}
+	</select>
+
+	<!-- 총 개수 -->
+	<select id="membertotalpage" resultType="int" parameterType="string">
+		select count(mem_id) from member
+		WHERE mem_id LIKE CONCAT('%',#{query},'%')
+	</select>
+
+	
+	<select id="selectOneMem" parameterType="String" resultMap="mypageResult">
+    	SELECT mem_id, mem_name, mem_lev, mem_point FROM movieforest.member
+    	WHERE mem_id=#{mem_id}
+    </select>
+
+	<select id="selectPointById" parameterType="string" resultType="_int">
+		SELECT MEM_POINT FROM MEMBER WHERE MEM_ID = #{id}
+	</select>
+	
+	
+	
+	
+	<update id="plusPoint" parameterType="member">
+		UPDATE movieforest.member SET mem_point = mem_point + #{mem_point}
+		WHERE mem_id = #{mem_id}
+	</update>
+	
+	
+	<!-- 6개월간 예매 금액 가져오기 -->
+	<select id="selectResMoney" parameterType="String" resultType="int">
+		SELECT IFNULL(SUM(res_sum), 0) as res_moneys
+		FROM res
+		WHERE mem_id = #{mem_id} 
+		GROUP BY mem_id
+	</select>
+	
+	
+	<!-- 등급 갱신 -->
+	<update id="updateMemLev" parameterType="member">
+		UPDATE movieforest.member SET mem_lev = #{mem_lev}
+		WHERE mem_id = #{mem_id}
+	</update>
+	
+	
+
+
+</mapper>

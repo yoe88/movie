@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="mapper.mythea">
+ 	<!-- Mythea 클래스 -->
+ 	<resultMap id="mytheaResult" type="mythea">
+ 		<result property="thea_code" column="thea_code" />
+ 		<result property="mem_id"    column="mem_id"    />
+ 	</resultMap>
+ 	
+ 	<resultMap id="theaResult" type="theaInfo">
+ 		<result property="thea_code" column="thea_code" />
+ 		<result property="thea_name" column="thea_name" />
+ 	</resultMap>
+ 	
+ 	<select id="selectAllthea" resultMap="theaResult">
+ 		SELECT thea_code, thea_name FROM movieforest.thea_info
+ 		ORDER BY thea_name ASC
+ 	</select>
+ 	
+ 	
+ 	<select id="selectMythea" resultMap="theaResult" parameterType="String">
+ 		SELECT A.thea_code, thea_name  
+		FROM movieforest.mytheater A, movieforest.thea_info B
+		WHERE A.thea_code = B.thea_code AND mem_id = #{mem_id}
+		ORDER BY thea_name ASC
+ 	</select>
+ 	
+ 	<select id="selectnotMythea" resultMap="theaResult" parameterType="String">
+ 		SELECT thea_code, thea_name  
+		FROM movieforest.thea_info
+		WHERE thea_code not in(SELECT thea_code FROM mytheater WHERE mem_id = #{mem_id})
+		ORDER BY thea_name ASC
+ 	</select>
+ 	
+
+ 	
+ 	<insert id="insertMythea" parameterType="mythea">
+ 		INSERT INTO movieforest.mytheater (thea_code, mem_id)
+ 		VALUES (#{thea_code}, #{mem_id})
+ 	</insert>
+ 	
+ 	<delete id="deleteMythea" parameterType="mythea">
+ 		DELETE FROM movieforest.mytheater
+ 		WHERE thea_code = #{thea_code} AND mem_id = #{mem_id}
+ 	</delete>
+ 	
+ </mapper>

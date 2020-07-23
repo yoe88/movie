@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.com_reply">
+	<!-- Com_reply 클래스 -->
+	<resultMap id="comReplyResult" type="comReply">
+		<result property="com_no" column="com_no" />
+		<result property="rno" column="rno" />
+		<result property="content" column="content" />
+		<result property="mem_id" column="mem_id" />
+		<result property="regdate" column="regdate" />
+	</resultMap>
+
+	<!-- resultMap : list일때 사용 resultType : 가져오는게 여러개가 아닐때 -->
+
+	<!-- 댓글 조회 -->
+	<select id="readReply" resultType="comReply">
+		SELECT com_no, rno, content, mem_id, regdate
+		FROM movieforest.com_reply
+		WHERE com_no = #{com_no}
+		ORDER BY regdate DESC
+	</select>
+
+	<!-- 댓글 작성 -->
+	<insert id="writeReply" parameterType="comReply">
+		INSERT INTO movieforest.com_reply(com_no, content, mem_id)
+		VALUES( #{com_no}, 
+				#{content}, 
+				#{mem_id} )
+	</insert>
+
+	<!-- 댓글수 -->
+	<select id="upRepno" parameterType="int">
+		SELECT COUNT (rno) 
+		FROM movieforest.com_reply
+		WHERE rno = #{rno}
+	</select>
+
+	<!-- 댓글 수정 -->
+	<update id="updateReply" parameterType="comReply">
+		UPDATE movieforest.com_reply SET content = #{content}
+		WHERE rno = #{rno}
+	</update>
+
+	<!-- 댓글 삭제 -->
+	<delete id="deleteReply" parameterType="comReply">
+		DELETE FROM movieforest.com_reply
+		WHERE rno = #{rno}
+	</delete>
+	
+	<!-- 선택된 댓글 조회 -->
+	<select id="selectReply" resultType="comReply">
+		SELECT
+				com_no
+			  , rno
+			  , content
+			  , mem_id
+			  , regdate
+		  FROM movieforest.com_reply
+		 WHERE rno = #{rno}
+	</select>
+
+
+</mapper>
+
+<!-- mysql에서 불러 오겠다 -->

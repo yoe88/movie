@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration 	PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <typeAliases>
+        <typeAlias type="com.spring.baseSetting.dto.Member"		alias="member"   />
+    	<typeAlias type="com.spring.baseSetting.dto.Mov_show"	alias="mov_show" />
+        <typeAlias type="com.spring.baseSetting.dto.Mov_grade"  alias="mov_grade" />
+        <typeAlias type="com.spring.baseSetting.dto.Movie"		alias="movie"    />
+		<typeAlias type="com.spring.baseSetting.dto.Mythea"     alias="mythea"   />
+        <typeAlias type="com.spring.baseSetting.dto.Roominfo"   alias="roominfo"/>
+        <typeAlias type="com.spring.baseSetting.dto.Seat"       alias="seat"/>
+        <typeAlias type="com.spring.baseSetting.dto.Seatinfo"   alias="seatinfo"/>
+        <typeAlias type="com.spring.baseSetting.dto.Still"		alias="still"    />
+        <typeAlias type="com.spring.baseSetting.dto.Theainfo"   alias="theainfo"/>
+        <typeAlias type="com.spring.baseSetting.dto.Com_notice" alias="comNotice" />
+        <typeAlias type="com.spring.baseSetting.dto.Com_reply"  alias="comReply" />
+        <typeAlias type="com.spring.baseSetting.dto.Criteria"   alias="criteria" />
+        <typeAlias type="com.spring.baseSetting.dto.Res" alias="res" />
+        <typeAlias type="com.spring.baseSetting.dto.SearchCriteria"  alias="searchCriteria" />
+        
+    </typeAliases>
+</configuration>

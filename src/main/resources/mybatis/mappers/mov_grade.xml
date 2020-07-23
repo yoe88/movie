@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.mov_grade">
+	<!-- mov_grade 클래스 -->
+	<resultMap id="mov_gradeResult" type="mov_grade">
+		<result property="mov_grade_no" column="mov_grade_no" />
+		<result property="mov_code" column="mov_code" />
+		<result property="mem_id" column="mem_id" />
+		<result property="content" column="content" />
+		<result property="grade" column="grade" />
+	</resultMap>
+	<resultMap id="gradeMov" type="map">
+		<result property="mov_grade_no" column="mov_grade_no" />
+		<result property="mov_code" column="mov_code" />
+		<result property="mov_title" column="mov_title" />
+		<result property="mem_id" column="mem_id" />
+		<result property="mem_name" column="mem_name" />
+		<result property="content" column="content" />
+		<result property="grade" column="grade" />
+	</resultMap>
+	
+	<!-- 한 영화의 평균평점 보기 -->
+	<select id="selectAvgGrade" parameterType="String" resultType="float">
+		select IFNULL(round(avg(grade),2), 0) from `movieforest`.`mov_grade` where `mov_code` = #{mov_code}
+	</select>
+	
+	<!-- 한 영화의 평점 보두 보기(기본키 내림차순으로 정렬) -->
+	<select id="selectMovAllgrade" resultMap="gradeMov" parameterType="String">
+		select `mov_grade_no`,`mov_code`,B.`mem_id`,`mem_name`,`content`,`grade` from `movieforest`.`mov_grade` A, `movieforest`.`member` B
+		where A.mem_id = B.mem_id AND `mov_code` = #{mov_code}
+		order by mov_grade_no desc;
+	</select>
+	
+	<!-- 모든 평점 보기(관리자용) -->
+	<select id="selectAllgrade" resultMap="gradeMov">
+		select `mov_grade_no`,`mov_title`,`mem_name`,`content`,`grade` from `movieforest`.`mov_grade` A, `movieforest`.`movie` B, `movieforest`.`member` C
+		where A.mov_code = B.mov_code and A.mem_id = C.mem_id
+		order by mov_grade_no desc;
+	</select>
+	
+	<!-- 평점 작성 -->
+	<insert id="insertMov_grade" parameterType="mov_grade">
+		<selectKey keyProperty="mov_grade_no" resultType="java.lang.Integer" order="BEFORE">
+        	<!-- select count(IFNULL(still_no, 0)) from movieforest.stillcut -->
+    		select ifnull(max(mov_grade_no), 0)+1 from movieforest.mov_grade
+    	</selectKey>
+		INSERT INTO `movieforest`.`mov_grade` (`mov_grade_no`, `mov_code` , `mem_id`, `content`, `grade`)
+		values(#{mov_grade_no}, #{mov_code}, #{mem_id}, #{content}, #{grade})
+	</insert>
+	
+	<!-- 평점 수정 -->
+	<update id="updateMov_grade" parameterType="mov_grade">
+    	UPDATE mov_grade SET `content`=#{content}, `grade`=#{grade} where `mov_grade_no`='${mov_grade_no}'
+    </update>
+	
+	<!-- 평점 삭제(관리자도 삭제가 가능하도록) -->
+	<delete id="deleteMov_grade" parameterType="mov_grade">
+    	DELETE FROM `movieforest`.`mov_grade` WHERE `mov_grade_no` = #{mov_grade_no}
+    </delete>
+	
+</mapper>
